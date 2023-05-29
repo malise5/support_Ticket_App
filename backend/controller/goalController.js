@@ -1,5 +1,7 @@
-//======================OPTION 1 uSING eXPRESS aSYNC hANDLER================================
 const asyncHandler = require("express-async-handler");
+const Goal = require("../models/goalModel");
+
+//======================OPTION 1 uSING eXPRESS aSYNC hANDLER================================
 //@desc Get goals
 // @route GET/api/goals
 // @access Private
