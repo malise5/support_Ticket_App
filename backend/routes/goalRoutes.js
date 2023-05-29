@@ -5,11 +5,15 @@ const {
     getOneGoal,
     setGaol,
     updateGaol,
-    deleteGaol,
+    deleteGoal,
 } = require("../controller/goalController");
 const { protect } = require("../middleware/authMiddleware");
 
-router.route("/").get(protect, getGoals).post(setGaol);
-router.route("/:id").get(getOneGoal).put(updateGaol).delete(deleteGaol);
+router.route("/").get(protect, getGoals).post(protect, setGaol);
+router
+    .route("/:id")
+    .get(getOneGoal)
+    .put(protect, updateGaol)
+    .delete(protect, deleteGoal);
 
 module.exports = router;

@@ -1,12 +1,13 @@
 const asyncHandler = require("express-async-handler");
 const Goal = require("../models/goalModel");
+const User = require("../models/userModel");
 
 //======================OPTION 1 uSING eXPRESS aSYNC hANDLER================================
 //@desc Get goals
 // @route GET/api/goals
 // @access Private
 const getGoals = asyncHandler(async (req, res) => {
-    const goals = await Goal.find();
+    const goals = await Goal.find({ user: req.user.id });
     res.status(200).json({
         numberOfGoals: goals.length,
         data: goals,
@@ -38,6 +39,7 @@ const setGaol = asyncHandler(async (req, res) => {
     // const goal = await Goal.create(req.body);
     const goal = await Goal.create({
         text: req.body.text,
+        user: req.user.id,
     });
     res.status(201).json({
         data: goal,
@@ -54,6 +56,19 @@ const updateGaol = asyncHandler(async (req, res) => {
         throw new Error("Goal not Found");
     }
 
+    // ..check for user
+    const user = await User.findById(req.user.id);
+    if (!user) {
+        res.status(401);
+        throw new Error("User not found");
+    }
+
+    //make sure the logged in user matches the goal user
+    if (goal.user.toString() !== user.id) {
+        res.status(401);
+        throw new Error("User not Authorized");
+    }
+
     const updatedGoal = await Goal.findByIdAndUpdate(req.params.id, req.body, {
         new: true,
     });
@@ -65,14 +80,26 @@ const updateGaol = asyncHandler(async (req, res) => {
 //@desc Delete goals
 // @route DELETE/api/goals/:id
 // @access Private
-const deleteGaol = asyncHandler(async (req, res) => {
+const deleteGoal = asyncHandler(async (req, res) => {
     const goal = await Goal.findById(req.params.id);
     if (!goal) {
         res.status(400);
         throw new Error("Goal not Found");
     }
 
-    const deletegoal = await Goal.findByIdAndDelete(req.params.id);
+    const user = await User.findById(req.user.id);
+    if (!user) {
+        res.status(401);
+        throw new Error("User not found");
+    }
+
+    //make sure the logged in user matches the goal user
+    if (goal.user.toString() !== user.id) {
+        res.status(401);
+        throw new Error("User not Authorized");
+    }
+
+    const deleteGoal = await Goal.findByIdAndDelete(req.params.id);
     res.status(200).json({
         id: `${req.params.id} Was Deleted Successfully`,
     });
@@ -83,7 +110,7 @@ module.exports = {
     getOneGoal,
     setGaol,
     updateGaol,
-    deleteGaol,
+    deleteGoal,
 };
 
 //======================OPTION 2 uSING TRY-CATCH Async================================
