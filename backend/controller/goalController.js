@@ -6,8 +6,10 @@ const Goal = require("../models/goalModel");
 // @route GET/api/goals
 // @access Private
 const getGoals = asyncHandler(async (req, res) => {
+    const goals = await Goal.find();
     res.status(200).json({
-        message: "Get Goals",
+        numberOfGoals: goals.length,
+        data: goals,
     });
 });
 
@@ -15,8 +17,13 @@ const getGoals = asyncHandler(async (req, res) => {
 // @route GET/api/goals/id
 // @access Private
 const getOneGoal = asyncHandler(async (req, res) => {
+    const goal = await Goal.findById(req.params.id);
+    if (!goal) {
+        res.status(400);
+        throw new Error("Goal not Found");
+    }
     res.status(200).json({
-        message: `Get a specific goal ${req.params.id}`,
+        data: goal,
     });
 });
 
@@ -28,8 +35,12 @@ const setGaol = asyncHandler(async (req, res) => {
         res.status(400);
         throw new Error("fill the text field");
     }
+    // const goal = await Goal.create(req.body);
+    const goal = await Goal.create({
+        text: req.body.text,
+    });
     res.status(201).json({
-        message: "Set Goals",
+        data: goal,
     });
 });
 
@@ -37,8 +48,17 @@ const setGaol = asyncHandler(async (req, res) => {
 // @route PUT/api/goals/:id
 // @access Private
 const updateGaol = asyncHandler(async (req, res) => {
+    const goal = await Goal.findById(req.params.id);
+    if (!goal) {
+        res.status(400);
+        throw new Error("Goal not Found");
+    }
+
+    const updatedGoal = await Goal.findByIdAndUpdate(req.params.id, req.body, {
+        new: true,
+    });
     res.status(201).json({
-        message: `Update a goal ${req.params.id}`,
+        data: updatedGoal,
     });
 });
 
@@ -46,8 +66,15 @@ const updateGaol = asyncHandler(async (req, res) => {
 // @route DELETE/api/goals/:id
 // @access Private
 const deleteGaol = asyncHandler(async (req, res) => {
+    const goal = await Goal.findById(req.params.id);
+    if (!goal) {
+        res.status(400);
+        throw new Error("Goal not Found");
+    }
+
+    const deletegoal = await Goal.findByIdAndDelete(req.params.id);
     res.status(200).json({
-        message: `Delete a goal ${req.params.id}`,
+        id: `${req.params.id} Was Deleted Successfully`,
     });
 });
 
@@ -65,8 +92,9 @@ module.exports = {
 // // @access Private
 // const getGoals = async (req, res) => {
 //     try {
+// const goals = await Goal.find();
 //       res.status(200).json({
-//         message: "Get Goals",
+//         message: goals,
 //       });
 //     } catch (error) {
 //       res.status(500).json({
